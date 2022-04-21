@@ -4,9 +4,6 @@ const VTrace = artifacts.require("VTrace");
 
 contract("VTrace", accounts => {
     let c;
-    let address2 = accounts[2];
-    let address3 = accounts[3];
-    let address4 = accounts[4];
     before("deploy VTrace contract", async () => {
       c = await VTrace.deployed();
     })
@@ -18,46 +15,56 @@ contract("VTrace", accounts => {
 
     // test mint
     it("should mint successful", async() => {
-      // admin mint a token to address2
-      await c.safeMint(address2, 001) // mint to address2 a token which id is 001
+      // admin mint a token to accounts[2]
+      await c.safeMint(accounts[2], 001) // mint to accounts[2] a token which id is 001
 
-      const balanceOf2 = await c.balanceOf(address2); // query balance of address2, it should equals to 1
-      assert.equal(balanceOf2, 1, "balance Of address2 is wrong")
+      const balanceOf2 = await c.balanceOf(accounts[2]); // query balance of accounts[2], it should equals to 1
+      assert.equal(balanceOf2, 1, "balance Of accounts[2] is wrong")
+
+      const owner = await c.ownerOf(001)
+      assert.equal(accounts[2], owner, "owner of token 001 is wrong")
     })
 
     // test role
     it("should query role and grant role successful", async() => {
       minterRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE"));
 
-      // check address3 is not a minter
-      isMinter = await c.hasRole(minterRole, address3);
-      assert.equal(isMinter, false, "test role failed: address3 has minter role");
+      // check accounts[3] is not a minter
+      isMinter = await c.hasRole(minterRole, accounts[3]);
+      assert.equal(isMinter, false, "test role failed: accounts[3] has minter role");
 
-      // grant minter role to address3
-      await c.grantRole(minterRole, address3);
-      isMinter = await c.hasRole(minterRole, address3);
-      assert.equal(isMinter, true, "test role failed: address3 don't have minter role");
+      // grant minter role to accounts[3]
+      await c.grantRole(minterRole, accounts[3]);
+      isMinter = await c.hasRole(minterRole, accounts[3]);
+      assert.equal(isMinter, true, "test role failed: accounts[3] don't have minter role");
 
       // minterRole mint
-      await c.safeMint(address2, 002, {from: address3})
-      const balanceOf2 = await c.balanceOf(address2); // query balance of address2, it should equals to 2
-      assert.equal(balanceOf2, 2, "balance Of address2 is wrong")
+      await c.safeMint(accounts[2], 002, {from: accounts[3]})
+      const balanceOf2 = await c.balanceOf(accounts[2]); // query balance of accounts[2], it should equals to 2
+      assert.equal(balanceOf2, 2, "balance Of accounts[2] is wrong")
     })
 
-    // // test transfer
-    // it("should send coin correct", async() => {
-    //   balanceOf4 = await c.balanceOf(address4);
-    //   assert.equal(balanceOf4, 0, "balance of address4 is not zero");
+    // test transfer
+    it("should send token correct", async() => {
+      balanceOf4 = await c.balanceOf(accounts[4]);
+      assert.equal(balanceOf4, 0, "balance of accounts[4] is not zero");
 
-    //   // make sure that balance of address2 enough
-    //   const balanceOf2 = await c.balanceOf(address2); // query balance of address2, it should equals to 100
-    //   assert.equal(balanceOf2, 100, "balance Of address2 is not enough")
+      // make sure that balance of accounts[2] enough
+      const balanceOf2 = await c.balanceOf(accounts[2]); // query balance of accounts[2], it should equals to 100
+      assert.equal(balanceOf2, 2, "balance Of accounts[2] is not enough")
 
-    //   // function transfer(address to, uint256 amount) external returns (bool);
-    //   ok = await c.transfer(address4, 10, {from: address2});
-    //   assert.equal(ok, true, "transfer 10 VTC from address2 to address4 failed");
-    //   balanceOf4 = await c.balanceOf(address4);
-    //   assert.equal(balanceOf4, 10, "balance of address4 is wrong");
-    // })
+      // 1. safe transfer token from owner to a root user
+      await c.safeTransferFrom(accounts[2], accounts[0], 001, {from: accounts[2]});
+      balanceOf0 = await c.balanceOf(accounts[0]);
+      assert.equal(balanceOf0, 1, "balance of accounts[0] is wrong");
+      owner = await c.ownerOf(001)
+      assert.equal(accounts[0], owner, "owner of token 001 is wrong")
+      // 2. safe transfer token from root user to another user
+      await c.safeTransferFrom(accounts[0], accounts[4], 001, {from: accounts[0]})
+      balanceOf4 = await c.balanceOf(accounts[4]);
+      assert.equal(balanceOf4, 1, "balance of accounts[4] is wrong");
+      owner = await c.ownerOf(001)
+      assert.equal(accounts[4], owner, "owner of token 001 is wrong")
+    })
 
 });
