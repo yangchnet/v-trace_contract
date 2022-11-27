@@ -37,6 +37,11 @@ interface IERC721 is IERC165 {
     );
 
     /**
+     * @dev Emitted when `owner` process a token
+     */
+    event Process(address indexed owner, uint256 tokenId, string info);
+
+    /**
      * @dev Returns the number of tokens in ``owner``'s account.
      */
     function balanceOf(address owner) external view returns (uint256 balance);
@@ -158,4 +163,28 @@ interface IERC721 is IERC165 {
         external
         view
         returns (bool);
+
+    /**
+     * @dev add process info to a token
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     * - caller must own the `tokenId`
+     *
+     * Emits a {Process} event.
+     */
+    function process(uint256 tokenId, string memory process_info) external;
+
+    /**
+     * @dev get process info of token
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     */
+    function getProcessInfo(uint256 tokenId)
+        external
+        view
+        returns (string[] memory);
 }

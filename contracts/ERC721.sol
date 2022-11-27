@@ -29,6 +29,9 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
 
+    // Mapping from tokenId to process info
+    mapping(uint256 => string[]) private _processesInfo;
+
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
 
@@ -241,6 +244,18 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
             "ERC721: transfer caller is not owner nor approved"
         );
         _safeTransfer(from, to, tokenId, _data);
+    }
+
+    function process(uint256 tokenId, string memory process_info) public {
+        _process(tokenId, process_info);
+    }
+
+    function getProcessInfo(uint256 tokenId)
+        public
+        view
+        returns (string[] memory)
+    {
+        return _getProcessInfo(tokenId);
     }
 
     /**
@@ -530,4 +545,28 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         address to,
         uint256 tokenId
     ) internal virtual {}
+
+    /**
+     * @dev See {IERC721-process}.
+     */
+    function _process(uint256 tokenId, string memory process_info) internal {
+        address from = _msgSender();
+        require(
+            ERC721.ownerOf(tokenId) == from,
+            "ERC721: transfer from incorrect owner"
+        );
+        _processesInfo[tokenId].push(process_info);
+        emit Process(from, tokenId, process_info);
+    }
+
+    /**
+     * @dev See {IERC721-getProcessInfo}.
+     */
+    function _getProcessInfo(uint256 tokenId)
+        internal
+        view
+        returns (string[] memory)
+    {
+        return _processesInfo[tokenId];
+    }
 }
