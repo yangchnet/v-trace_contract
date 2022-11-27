@@ -174,7 +174,7 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Process} event.
      */
-    function process(uint256 tokenId, string memory process_info) external;
+    function appendInfo(uint256 tokenId, string memory process_info) external;
 
     /**
      * @dev get process info of token
@@ -183,7 +183,7 @@ interface IERC721 is IERC165 {
      *
      * - `tokenId` must exist.
      */
-    function getProcessInfo(uint256 tokenId)
+    function tokenInfos(uint256 tokenId)
         external
         view
         returns (string[] memory);

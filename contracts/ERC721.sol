@@ -246,15 +246,17 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _safeTransfer(from, to, tokenId, _data);
     }
 
-    function process(uint256 tokenId, string memory process_info) public {
-        _process(tokenId, process_info);
+    /**
+     * @dev See {IERC721-appendInfo}.
+     */
+    function appendInfo(uint256 tokenId, string memory process_info) public {
+        _appendInfo(tokenId, process_info);
     }
 
-    function getProcessInfo(uint256 tokenId)
-        public
-        view
-        returns (string[] memory)
-    {
+    /**
+     * @dev See {IERC721-tokenInfos}.
+     */
+    function tokenInfos(uint256 tokenId) public view returns (string[] memory) {
         return _getProcessInfo(tokenId);
     }
 
@@ -547,9 +549,9 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     ) internal virtual {}
 
     /**
-     * @dev See {IERC721-process}.
+     * @dev See {IERC721-appendInfo}.
      */
-    function _process(uint256 tokenId, string memory process_info) internal {
+    function _appendInfo(uint256 tokenId, string memory process_info) internal {
         address from = _msgSender();
         require(
             ERC721.ownerOf(tokenId) == from,
@@ -560,7 +562,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-getProcessInfo}.
+     * @dev See {IERC721-tokenInfos}.
      */
     function _getProcessInfo(uint256 tokenId)
         internal
