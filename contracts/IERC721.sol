@@ -72,6 +72,8 @@ interface IERC721 is IERC165 {
         address from,
         address to,
         uint256 tokenId,
+        string memory transId,
+        string memory digest,
         bytes calldata data
     ) external;
 
@@ -92,7 +94,9 @@ interface IERC721 is IERC165 {
     function safeTransferFrom(
         address from,
         address to,
-        uint256 tokenId
+        uint256 tokenId,
+        string memory transId,
+        string memory digest
     ) external;
 
     /**
@@ -112,7 +116,9 @@ interface IERC721 is IERC165 {
     function transferFrom(
         address from,
         address to,
-        uint256 tokenId
+        uint256 tokenId,
+        string memory transId,
+        string memory digest
     ) external;
 
     /**
@@ -149,20 +155,19 @@ interface IERC721 is IERC165 {
      *
      * - `tokenId` must exist.
      */
-    function getApproved(uint256 tokenId)
-        external
-        view
-        returns (address operator);
+    function getApproved(
+        uint256 tokenId
+    ) external view returns (address operator);
 
     /**
      * @dev Returns if the `operator` is allowed to manage all of the assets of `owner`.
      *
      * See {setApprovalForAll}
      */
-    function isApprovedForAll(address owner, address operator)
-        external
-        view
-        returns (bool);
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) external view returns (bool);
 
     /**
      * @dev add process info to a token
@@ -174,17 +179,29 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Process} event.
      */
-    function appendInfo(uint256 tokenId, string memory process_info) external;
+    function process(
+        uint256 tokenId,
+        string memory transId,
+        string memory digest
+    ) external;
 
     /**
-     * @dev get process info of token
+     * @dev get transIds for token
      *
      * Requirements:
      *
      * - `tokenId` must exist.
      */
-    function tokenInfos(uint256 tokenId)
-        external
-        view
-        returns (string[] memory);
+    function getTransIds(uint256 tokenId) external returns (string[] memory);
+
+    /**
+     * @dev get trans digest for token by transId
+     *
+     * Requirements:
+     *
+     * - `transId` must exist.
+     */
+    function transDigest(
+        string memory transId
+    ) external returns (string memory);
 }
