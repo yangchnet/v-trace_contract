@@ -21,6 +21,9 @@ abstract contract BatchOperation is Context, ERC721 {
             require(!_exists(tokenIds[i]), "token already exist");
         }
         for (uint i = 0; i < tokenIds.length; i++) {
+            require(!_transIdExists(transIds[i]), "transId already exist");
+        }
+        for (uint i = 0; i < tokenIds.length; i++) {
             _safeMint(to, tokenIds[i], transIds[i], digest);
         }
     }
@@ -43,6 +46,9 @@ abstract contract BatchOperation is Context, ERC721 {
             );
         }
         for (uint i = 0; i < tokenIds.length; i++) {
+            require(!_transIdExists(transIds[i]), "transId already exist");
+        }
+        for (uint i = 0; i < tokenIds.length; i++) {
             safeTransferFrom(from, to, tokenIds[i], transIds[i], digest, "");
         }
     }
@@ -61,6 +67,9 @@ abstract contract BatchOperation is Context, ERC721 {
                 ownerOf(tokenIds[i]) == _msgSender(),
                 "ERC721: transfer caller is not owner"
             );
+        }
+        for (uint i = 0; i < tokenIds.length; i++) {
+            require(!_transIdExists(transIds[i]), "transId already exist");
         }
         for (uint i = 0; i < tokenIds.length; i++) {
             _process(tokenIds[i], transIds[i], digest);

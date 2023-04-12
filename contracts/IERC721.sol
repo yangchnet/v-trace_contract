@@ -204,4 +204,8 @@ interface IERC721 is IERC165 {
     function transDigest(
         string memory transId
     ) external returns (string memory);
+
+    // function transIdExists(
+    //     string memory transId
+    // ) external view virtual returns (bool);
 }

@@ -11,6 +11,13 @@ import "./utils/Context.sol";
 import "./utils/Strings.sol";
 import "./utils/introspection/ERC165.sol";
 
+library Library {
+    struct data {
+        string digest;
+        bool isValue;
+    }
+}
+
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata extension, but not including the Enumerable extension, which is available separately as
@@ -42,7 +49,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     // Mapping form transId to digest
-    mapping(string => string) private _digest;
+    mapping(string => Library.data) private _digest;
 
     // Mapping from token ID to transIds
     mapping(uint256 => string[]) private _tokenId2TransId;
@@ -290,6 +297,24 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         return _owners[tokenId] != address(0);
     }
 
+    // function transIdExists(
+    //     string memory transId
+    // ) external view virtual returns (bool) {
+    //     return _transIdExists(transId);
+    // }
+
+    /**
+     * check if transId exist
+     */
+    function _transIdExists(
+        string memory transId
+    ) internal view virtual returns (bool) {
+        if (!_digest[transId].isValue) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * @dev Returns whether `spender` is allowed to manage `tokenId`.
      *
@@ -368,6 +393,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     ) internal virtual {
         require(to != address(0), "ERC721: mint to the zero address");
         require(!_exists(tokenId), "ERC721: token already minted");
+        require(!_transIdExists(transId), "transId already exist");
 
         _beforeTokenTransfer(address(0), to, tokenId);
 
@@ -375,7 +401,9 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _owners[tokenId] = to;
 
         emit Transfer(address(0), to, tokenId);
-        _digest[transId] = digest;
+        _digest[transId].digest = digest;
+        _digest[transId].isValue = true;
+        _tokenId2TransId[tokenId].push(transId);
 
         _afterTokenTransfer(address(0), to, tokenId);
     }
@@ -430,6 +458,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         );
         require(to != address(0), "ERC721: transfer to the zero address");
 
+        require(!_transIdExists(transId), "transId already exist");
+
         _beforeTokenTransfer(from, to, tokenId);
 
         // Clear approvals from the previous owner
@@ -440,7 +470,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _owners[tokenId] = to;
 
         emit Transfer(from, to, tokenId);
-        _digest[transId] = digest;
+        _digest[transId].digest = digest;
+        _tokenId2TransId[tokenId].push(transId);
 
         _afterTokenTransfer(from, to, tokenId);
     }
@@ -562,9 +593,11 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
             ERC721.ownerOf(tokenId) == from,
             "ERC721: transfer from incorrect owner"
         );
+        require(!_transIdExists(transId), "transId already exist");
         // _processesInfo[tokenId].push(process_info);
         emit Process(from, tokenId, digest);
-        _digest[transId] = digest;
+        _digest[transId].digest = digest;
+        _tokenId2TransId[tokenId].push(transId);
     }
 
     function getTransIds(
@@ -588,6 +621,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     function _transDigest(
         string memory transId
     ) internal view returns (string memory) {
-        return _digest[transId];
+        return _digest[transId].digest;
     }
 }
